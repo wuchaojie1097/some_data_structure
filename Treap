@@ -1,0 +1,108 @@
+import kotlin.random.Random.Default.nextLong
+
+// Range update (lazy propagetino),  range sum (log n time)
+class TinyTreap() {
+
+    inner class Treap(
+        var data: Long,
+        val priority: Long,
+        val kids: MutableList<Treap?> = MutableList(2) { null },
+        var subtreeSize: Long = 0,
+        var sum: Long = 0L,
+        var toProp: Long = 0L
+    )
+
+    // return size of subtree (include this node)
+    fun size(t: Treap?) = t?.subtreeSize ?: 0
+
+    // update subtreeSize and sum for this node.  so what is sum,
+    private fun recalc(t: Treap?) {
+        if (t == null) return
+        t.subtreeSize = 1
+        t.sum =
+            t.data + t.toProp * size(t)  // when should propagate data ???? so size should be 1 because just set it subtreeSize to 1
+        t.kids.forEach {
+            if (it != null) {
+                t.subtreeSize += it.subtreeSize; t.sum += it.sum
+            }
+        }
+    }
+
+    // when range update, first split treap to three part(mostly), int middle part, update all value with some number by lazy propagation
+    private fun prop(t: Treap?) {
+        if (t == null || t.toProp == 0L) return
+        t.kids.forEach { if (it != null) it.toProp += t.toProp }  // propagate to child
+        t.data += t.toProp  // make propagate value to actual data
+        t.toProp = 0L  // clear propagate value after propagate
+        recalc(t)  // will sum change ??? : kid may have change value
+    }
+
+    private fun split(t: Treap?, nInLeft: Long): List<Treap?> {
+        if (t == null) return List(2) { null }
+        prop(t)
+        if (size(t.kids[0]) >= nInLeft) {  // Treap t(this one) is in right half of treap
+            val (left, right) = split(t.kids[0], nInLeft)  // keep split left treap because it has more treap
+            t.kids[0] = right
+            recalc(t)  // any time make change, should recalculate treap
+            return listOf(left, t)
+        } else {
+            // Treap t(this one) is in left half of treap, t's right child should return [nInLeft - size(t.kids[0]) - 1] treap to make total of nInLeft in first return treap
+            val (left, right) = split(t.kids[1], nInLeft - size(t.kids[0]) - 1)
+            t.kids[1] = left
+            recalc(t)
+            return listOf(t, right)
+        }
+    }
+
+    // for insert treap
+    fun merge(l: Treap?, r: Treap?): Treap? {
+        if (l == null) return r
+        if (r == null) return l
+        prop(l)  // before use, propagate value
+        prop(r)// before use, propagate value
+        if (l.priority < r.priority) {  // l should on the top, l's right child become merge result of l's right child and r
+            l.kids[1] = merge(l.kids[1], r)
+            recalc(l)  // after change, recalculate value
+            return l
+        } else {
+            r.kids[0] = merge(l, r.kids[0])
+            recalc(r)  // after change, recalculate value
+            return r
+        }
+    }
+
+    // l and r in 0..n-1 where n is number of treap
+    fun rangeAdd(t: Treap?, l: Long, r: Long, toAdd: Long): Treap {
+        assert(t != null)
+        val (a, b) = split(t, l)
+        val (c, d) = split(b, r - l + 1)  // treap become a c d, and c is which  we want to update
+        c!!.toProp += toAdd  // c should not be null here
+        return merge(a, merge(c, d))!!  // this should not null
+    }
+
+    fun rangeSum(t: Treap?, l: Long, r: Long): Long {
+        assert(t != null)
+        val (a, b) = split(t, l)
+        val (c, d) = split(b, r - l + 1)  // treap become a c d, and c is include sum we need
+        return c!!.sum
+    }
+}
+
+fun main() {
+    // create our treap
+    val treap = TinyTreap()
+    // create one treap node
+    val treapA = treap.Treap(3, nextLong())
+    // create another treap node
+    val treapB = treap.Treap(2, nextLong())
+    // combine these two node to a bigger treap
+    var  rootTreap = treap.merge(treapA, treapB)  // internal array value should be: 3 2
+    // and another treap in it
+    rootTreap = treap.merge(rootTreap, treap.Treap(4, nextLong()))  // internal array value should be: 3 2 4
+    // try range update treap, l and r should in 0..n-1 where n is number of treap in TinyTreap
+    treap.rangeAdd(rootTreap, 0, 1, 5) // internal array value should be: 8 7 4
+    // try get range sum form treap
+    println(treap.size(rootTreap))
+    val ans = treap.rangeSum(rootTreap, 1, 2)  // ans should be 7 + 4 = 11
+    println(ans)
+}
