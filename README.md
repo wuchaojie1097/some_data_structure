@@ -30,7 +30,10 @@ what can segment tree do:  // https://cp-algorithms.com/data_structures/segment_
 
   11.3 Adding on segments, querying for maximum
 
-  12. Generalization to higher dimensions
+  12.Generalization to higher dimensions
 
-  13. Preserving the history of its values (Persistent Segment Tree)
+  13.Preserving the history of its values (Persistent Segment Tree)
+  
+  14.Finding the k-th smallest number in a range
 
+  15.Implicit segment tree
