@@ -1,6 +1,6 @@
 # some_data_structure
 
-what can segment tree do:  // https://cp-algorithms.com/data_structures/segment_tree.html
+what can segment tree do:  // https://cp-algorithms.com/data_structures/segment_tree.html 
   1.Finding the maximum and the number of times it appears
   2.Compute the greatest common divisor / least common multiple
   3.Counting the number of zeros, searching for the k-th zero
