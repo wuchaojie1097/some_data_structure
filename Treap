@@ -80,11 +80,11 @@ class TinyTreap() {
         return merge(a, merge(c, d))!!  // this should not null
     }
 
-    fun rangeSum(t: Treap?, l: Long, r: Long): Long {
-        assert(t != null)
+    fun rangeSum(t: Treap, l: Long, r: Long): Pair<Treap, Long> {
         val (a, b) = split(t, l)
         val (c, d) = split(b, r - l + 1)  // treap become a c d, and c is include sum we need
-        return c!!.sum
+        val rootTreap = merge(a, merge(c, d))
+        return Pair(rootTreap!!, c!!.sum)
     }
 }
 
