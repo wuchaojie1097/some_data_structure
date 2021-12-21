@@ -1,0 +1,67 @@
+class segTree(
+    val leftMost: Int,
+    val rightMost: Int,
+    var leftChild: segTree? = null,
+    var rightChild: segTree? = null,
+    var value: Long = 0L,  // can put more data here
+    var size: Int = 1,  // should be rightMost - leftMost + 1
+    var toProp: Long = 0L
+) {
+
+    constructor(tl: Int, tr: Int, a: List<Int>) : this(leftMost = tl, rightMost = tr) {
+        if (tl == tr) {
+            value = a[tl].toLong()
+        } else {
+            val mid = (tl + tr) / 2
+            leftChild = segTree(tl, mid, a)
+            rightChild = segTree(mid + 1, tr, a)
+            size = tr - tl + 1
+            recalc()
+        }
+    }
+
+    // can change to other function, not just for sum (also change rangeSum function)
+    // function does: combine two child to get parent's data
+    fun recalc() {
+        if (leftMost == rightMost) return
+        val l = leftChild!!.value
+        val r = rightChild!!.value
+        when {
+            (l == 0L) -> value = r
+            (r == 0L) -> value = l
+            else -> value = minOf(r, l)
+        }
+
+        /// else value = leftChild!!.value + rightChild!!.value
+    }
+
+    // should not be leaf
+    fun prop() {
+        leftChild
+    }
+
+    fun pointUpdate(index: Int, newVal: Long) {
+        if (leftMost == rightMost) {
+            value = newVal; return
+        } // leaf node, just update value
+        if (index <= leftChild!!.rightMost) leftChild!!.pointUpdate(index, newVal)
+        else rightChild!!.pointUpdate(index, newVal)
+        // child may change, so recalculate value
+        recalc()
+    }
+
+    fun rangeQuery(l: Int, r: Int): Long {
+        // entirely disjoint
+        if (l > rightMost || r < leftMost) return 0L
+        // covers us
+        if (l <= leftMost && rightMost <= r) return value
+        // we don't know
+        val le = leftChild!!.rangeQuery(l, r)
+        val ri = rightChild!!.rangeQuery(l, r)
+        when {
+            (le == 0L) -> return ri
+            (ri == 0L) -> return le
+            else -> return minOf(ri, le)
+        }
+    }
+}
