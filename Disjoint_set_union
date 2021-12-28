@@ -1,0 +1,22 @@
+    val max = 200100
+    val parent = MutableList(max * 2) { -1 }
+    val depth = MutableList(max * 2) { -1 }
+    
+    fun get(i: Int): Int {
+        if (i==parent[i]) return i
+        parent[i] = get(parent[i])
+        return parent[i]
+    }
+
+    fun join(a: Int, b: Int) {
+        var ap = get(a)
+        var bp = get(b)
+        if (depth[ap] > depth[bp]) ap = bp.also { bp = ap }
+        parent[ap] = bp
+        depth[bp]++
+    }
+    
+    for (i in 1..2 * n) {  // parent start from 1
+            parent[i] = i
+            depth[i] = 1
+    }
